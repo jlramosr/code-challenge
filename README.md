@@ -1,13 +1,7 @@
-BILLIN CODE CHALLENGE
+Articles Management
 =====================
 
-Welcome to Billin code challenge!
-
 This project includes the scaffold in order to start the code challenge. You will need to proceed with installation and configuration and after that, you can do the exercise. It will have 3 main parts we are going to explain. This code challenge has been made in order to test fullstack skills. You will need to use **GraphQL**, **NodeJS** and **ReactJS**. If you want to add any CSS preprocessor or similar, please use **PostCSS**. The database has been made with **MongoDB** and **Jest** is already configured in order to test this app.
-
-Go ahead and let us know if you have any question or feedback.
-
-Once you have done your code challenge send us your github repository link to [devteam@billin.eu](mailto:devteam@billin.eu)
 
 ## Configuration
 
@@ -102,13 +96,9 @@ We have to be able to:
 
 ## Pieces of advice
 
-We will love to receive your code, even if you are not interested in working at Billin 😜. We will like your app if:
-
 * You follow clean coding practices
 * You test all the app ([Jest](https://facebook.github.io/jest/) is configured)
 * You use git properly
 * You think about the UX a little bit
-
-Let us know if you have any question or feedback.
 
 Hope to see your code soon!

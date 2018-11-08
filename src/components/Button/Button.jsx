@@ -4,52 +4,59 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import withWidth from '@material-ui/core/withWidth';
 import { withStyles } from '@material-ui/core/styles';
-import { default as ButtonMUI } from '@material-ui/core/Button';
+import Button from '@material-ui/core/Button';
 import Icon from '@material-ui/core/Icon';
-import ButtonStyles from 'assets/jss/buttonStyles.jsx';
+import ButtonStyles from '../../assets/jss/buttonStyles';
 
-class ButtonContainer extends React.Component {
-  render() {
-    const { classes, icon, onClick, responsive, size, title, variant, width } = this.props;
-    const showText = !responsive || width !== 'xs';
-    return (
-      <ButtonMUI
-        size={size}
-        variant={variant || 'outlined'}
-        color="primary"
-        onClick={onClick}
-        className={classes.root}
-      >
-        {icon &&
-          <Icon
-            component={icon}
-            className={classnames(classes.icon, showText && classes.iconWithText)}
-          />
-        }
-        {showText && title}
-      </ButtonMUI>
-    );
+const ButtonContainer = props => {
+  const { classes, icon, onClick, responsive, size, title, variant, width } = props;
+  const showText = !responsive || width !== 'xs';
+  return (
+    <Button
+      size={size}
+      variant={variant || 'outlined'}
+      color="primary"
+      onClick={onClick}
+      className={classes.root}
+    >
+      {icon &&
+        <Icon
+          component={icon}
+          className={classnames(classes.icon, showText && classes.iconWithText)}
+        />
+      }
+      {showText && title}
+    </Button>
+  );
+};
+
+const CustomButton = props => {
+  const { to, ...restProps } = props;
+
+  if (!to) {
+    return <ButtonContainer {...restProps} />;
   }
-}
 
-class Button extends React.Component {
-  render() {
-    const { to, ...restProps } = this.props;
-
-    if (!to) {
-      return <ButtonContainer {...restProps} />;
-    }
-
-    return (
-      <Link className={this.props.classes.link} to={to}>
-        <ButtonContainer {...restProps} />
-      </Link>
-    );
-  }
-}
+  return (
+    <Link className={props.classes.link} to={to}>
+      <ButtonContainer {...restProps} />
+    </Link>
+  );
+};
 
 ButtonContainer.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.shape().isRequired,
+  icon: PropTypes.func,
+  onClick: PropTypes.func,
+  responsive: PropTypes.bool,
+  size: PropTypes.oneOf(['small', 'medium', 'large']),
+  title: PropTypes.string.isRequired,
+  variant: PropTypes.string,
+  width: PropTypes.string,
+};
+
+CustomButton.propTypes = {
+  classes: PropTypes.shape().isRequired,
   icon: PropTypes.func,
   onClick: PropTypes.func,
   responsive: PropTypes.bool,
@@ -60,21 +67,9 @@ ButtonContainer.propTypes = {
   width: PropTypes.string,
 };
 
-Button.propTypes = {
-  classes: PropTypes.object.isRequired,
-  icon: PropTypes.func,
-  onClick: PropTypes.func,
-  responsive: PropTypes.bool,
-  size: PropTypes.oneOf(['small', 'medium', 'large']),
-  title: PropTypes.string.isRequired,
-  to: PropTypes.string,
-  variant: PropTypes.string,
-  width: PropTypes.string,
-};
-
-Button.defaultProps = {
+CustomButton.defaultProps = {
   responsive: false,
   size: 'medium',
 };
 
-export default withWidth()(withStyles(ButtonStyles)(Button));
+export default withWidth()(withStyles(ButtonStyles)(CustomButton));

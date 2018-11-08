@@ -1,4 +1,5 @@
-import API from 'utils/api';
+import { ARTICLES_QUERY } from '../../api/queries';
+import request from '../../api/request';
 
 export const FETCHING_ARTICLES = 'FETCHING_ARTICLES';
 export const FETCHING_ARTICLES_ERROR = 'FETCHING_ARTICLES_ERROR';
@@ -28,7 +29,7 @@ const errorFetchingArticlesAction = error => ({
 const receiveArticlesAction = articles => ({
   type: RECEIVE_ARTICLES,
   articles,
-})
+});
 
 const fetchingArticleAction = articleId => ({
   type: FETCHING_ARTICLE,
@@ -44,7 +45,7 @@ const receiveArticleAction = (articleId, values) => ({
   type: RECEIVE_ARTICLE,
   articleId,
   values,
-})
+});
 
 const creatingArticleAction = () => ({
   type: CREATING_ARTICLE,
@@ -52,16 +53,16 @@ const creatingArticleAction = () => ({
 
 const errorCreatingArticleAction = error => ({
   type: CREATING_ARTICLE_ERROR,
-  error
+  error,
 });
 
 const createArticleAction = (articleId, values) => ({
   type: CREATE_ARTICLE,
   articleId,
-  values
+  values,
 });
 
-const updatingArticleAction = (articleId) => ({
+const updatingArticleAction = articleId => ({
   type: UPDATING_ARTICLE,
   articleId,
 });
@@ -86,7 +87,7 @@ const removingArticleAction = articleId => ({
 const errorRemovingArticleAction = (articleId, error) => ({
   type: REMOVING_ARTICLE_ERROR,
   articleId,
-  error
+  error,
 });
 
 const removeArticleAction = articleId => ({
@@ -95,102 +96,54 @@ const removeArticleAction = articleId => ({
 });
 
 
-const fetchArticles = () => dispatch => {
-  dispatch(fetchingArticlesAction())
-  const params = {
-    mainCollectionId: process.env.REACT_APP_ITEMS_URL,
+const fetchArticles = () => async dispatch => {
+  dispatch(fetchingArticlesAction());
+  try {
+    const { data: { articles } } = await request(ARTICLES_QUERY);
+    dispatch(receiveArticlesAction(articles));
+  } catch (error) {
+    dispatch(errorFetchingArticlesAction(error));
   }
-  return API(process.env.REACT_APP_ITEMS_SOURCE).fetch(params)
-    .then(
-      items => {
-        dispatch(receiveArticlesAction(articles));
-      },
-      error => {
-        console.error('An error occurred fetching articles', error);
-        dispatch(errorFetchingArticlesAction(error));
-      }
-    )
+};
+
+const fetchArticle = articleId => async dispatch => {
+  dispatch(fetchingArticleAction());
+  try {
+    const { data: { article } } = await request(ARTICLES_QUERY);
+    dispatch(receiveArticleAction(article));
+  } catch (error) {
+    dispatch(errorFetchingArticleAction(error));
+  }
 }
 
-const fetchArticle = articleId => dispatch => {
-  dispatch(fetchingArticleAction())
-  const params = {
-    mainCollectionId: process.env.REACT_APP_ITEMS_URL,
-    documentId: articleId,
-  }
-  return API(process.env.REACT_APP_ITEMS_SOURCE).fetch(params)
-    .then(
-      item => {
-        dispatch(receiveArticleAction(articleId, item || {}));
-      },
-      error => {
-        console.error(error);
-        dispatch(errorFetchingArticleAction(error));
-      }
-    )
-}
-
-const createArticle = values => dispatch => {
+const createArticle = values => async dispatch => {
   dispatch(creatingArticleAction())
-  const params = {
-    mainCollectionId: process.env.REACT_APP_ITEMS_URL,
-    values,
+  try {
+    const { data: { article } } = await request(ARTICLES_QUERY);
+    dispatch(createArticleAction(values));
+  } catch (error) {
+    dispatch(errorCreatingArticleAction(error));
   }
-  return new Promise((resolve, reject) => {
-    API(process.env.REACT_APP_ITEMS_SOURCE).create(params).then(
-      documentIds => {
-        dispatch(createArticleAction(articleId, values));
-        resolve(documentIds);
-      },
-      error => {
-        console.error(error);
-        dispatch(errorCreatingArticleAction(error));
-        reject(error);
-      }
-    )
-  })
 }
 
-const updateArticle = (articleId, values) => dispatch => {
+const updateArticle = (articleId, values) => async dispatch => {
   dispatch(updatingArticleAction());
-  const params = {
-    mainCollectionId: process.env.REACT_APP_ITEMS_URL,
-    documentIds: itemIds,
-    values: newValues,
+  try {
+    const { data: { article } } = await request(ARTICLES_QUERY);
+    dispatch(updateArticleAction(articleId, values));
+  } catch (error) {
+    dispatch(errorUpdatingArticleAction(articleId, error));
   }
-  return new Promise((resolve, reject) => {
-    API(process.env.REACT_APP_ITEMS_SOURCE).update(params).then(
-      documentIds => {
-        dispatch(updateArticleAction(documentIds, newValues));
-        resolve(documentIds);
-      },
-      error => {
-        console.error(error);
-        dispatch(errorUpdatingArticleAction(articleId, error));
-        reject(error);
-      }
-    )
-  })
 }
 
-const removeArticle = articleId => dispatch => {
+const removeArticle = articleId => async dispatch => {
   dispatch(removingArticleAction());
-  const params = {
-    documentIds: articleId
+  try {
+    const { data: { article } } = await request(ARTICLES_QUERY);
+    dispatch(removeArticleAction(articleId));
+  } catch (error) {
+    dispatch(errorRemovingArticleAction(articleId, error));
   }
-  return new Promise((resolve, reject) => {
-    API(process.env.REACT_APP_ITEMS_SOURCE).remove(params).then(
-      documentId => {
-        dispatch(removeArticleAction(articleId))
-        resolve(documentId)
-      },
-      error => {
-        console.error(error)
-        dispatch(errorRemovingArticleAction(articleId, error))
-        reject(`An error occurred deleting item ${articleId}`, error)
-      }
-    )
-  })
 }
 
 export {

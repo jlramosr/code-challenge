@@ -14,60 +14,37 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import Button from '../../components/Button/Button';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
-import request from '../../api/request';
-import { ARTICLES_QUERY } from '../../api/queries';
+import { fetchArticles, removeArticle } from '../../store/actions/articles';
 import { openDialog } from '../../store/actions/ui';
 import HomeStyles from '../../assets/jss/homeStyles';
 
 class Home extends React.Component {
-  state = {
-    articles: [],
-    loading: true,
-  }
-
-  async componentDidMount() {
-    try {
-      const { data: { articles } } = await request(ARTICLES_QUERY);
-      this.setState({ articles, loading: false });
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-
-  }
-
-  onFieldChange = event => {
+  componentDidMount() {
+    this.props.fetchArticles();
   }
 
   onClickNew = () => {
-    this.props.openDialog({
-      edit: false,
-    });
+    this.props.openDialog(null);
   }
 
   onClickEdit = (event, articleId) => {
     event.preventDefault();
-    this.props.openDialog({
-      articleId,
-      edit: true,
-    });
+    this.props.openDialog(articleId);
   }
 
   onClickDelete = async (event, articleId) => {
     event.preventDefault();
+    this.props.removeArticle(articleId);
   }
 
   render() {
-    const { articles, loading } = this.state;
-    const { classes } = this.props;
+    const { articles, classes, loading } = this.props;
 
     return (
       <React.Fragment>
         <Header />
         <div className={classes.container}>
-          <div className={classes.header}>
+          <div className={classes.subheader}>
             <div className={classes.title}>
               <Typography variant="h4">Articles</Typography>
               {loading && <CircularProgress className={classes.progress} />}
@@ -93,7 +70,7 @@ class Home extends React.Component {
                       <div className={classes.itemInfo}>
                         <Typography variant="h5">{article.title}</Typography>
                         <div className={classes.itemExcerpt}>
-                          {article.excerpt}
+                          {article.content}
                         </div>
                       </div>
                       <div className={classes.itemActions}>
@@ -126,22 +103,31 @@ class Home extends React.Component {
 }
 
 Home.propTypes = {
-  classes: PropTypes.object.isRequired,
+  articles: PropTypes.arrayOf(PropTypes.shape),
+  classes: PropTypes.shape().isRequired,
+  fetchArticles: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
   openDialog: PropTypes.func.isRequired,
+  removeArticle: PropTypes.func.isRequired,
 };
 
-const mapStateToProps = ({ ui }) => {
-  const { dialog: { success } } = ui;
+Home.defaultProps = {
+  articles: [],
+  loading: true,
+};
+
+const mapStateToProps = state => {
+  const { allIds, byId, flow: { fetchingAll } } = state.articles;
   return {
-    success,
+    articles: allIds.map(id => byId[id]),
+    loading: fetchingAll,
   };
 };
 
 const mapDispatchToProps = dispatch => ({
-  openDialog: ({ edit, articleId }) => dispatch(openDialog({
-    edit,
-    articleId,
-  })),
+  fetchArticles: () => dispatch(fetchArticles()),
+  openDialog: articleId => dispatch(openDialog(articleId)),
+  removeArticle: articleId => dispatch(removeArticle(articleId)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(

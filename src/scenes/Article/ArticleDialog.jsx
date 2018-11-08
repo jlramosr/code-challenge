@@ -1,8 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
 import Slide from '@material-ui/core/Slide';
 import AppBar from '@material-ui/core/AppBar';
@@ -16,23 +19,29 @@ import Select from '@material-ui/core/Select';
 import Chip from '@material-ui/core/Chip';
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Check';
-import { closeDialog } from 'store/actions/ui';
+import { closeDialog } from '../../store/actions/ui';
 import articleDialogStyles from '../../assets/jss/articleDialogStyles';
+
+const emptyArticle = {
+  author: '',
+  content: '',
+  published: false,
+  tags: [],
+  title: '',
+};
 
 function Transition(props) {
   return <Slide direction="up" {...props} />;
 }
 
 class ArticleDialog extends React.Component {
-  state = {
-    author: null,
-    content: null,
-    published: false,
-    tags: [],
-    title: null,
-  }
+  state = emptyArticle;
 
   componentDidUpdate(prevProps) {
+    const { open, values } = this.props;
+    if (open && (prevProps.open !== open)) {
+      this.setState(values);
+    }
   }
 
   onRemoveTag = tagRemoved => {
@@ -47,33 +56,27 @@ class ArticleDialog extends React.Component {
     });
   }
 
-  finishDialog = success => {
-    this.setState({
-      author: null,
-      content: null,
-      published: false,
-      tags: [],
-      title: null,
-    });
-    this.props.closeDialog(success);
-  }
-
   saveData = /*async*/ () => {
     const { author, content, published, tags, title } = this.state;
     const { edit, articleId } = this.props;
   }
 
+  finishDialog = () => {
+    this.setState(emptyArticle);
+    this.props.closeDialog();
+  }
+
   closeDialog = () => {
-    this.finishDialog(false);
+    this.finishDialog();
   }
 
   handleClose = () => {
-    this.finishDialog(false);
+    this.finishDialog();
   };
 
   render() {
     const { author, content, published, tags, title } = this.state;
-    const { category, classes, edit, open } = this.props;
+    const { articleId, classes, open } = this.props;
     return (
       <Dialog
         fullScreen
@@ -87,14 +90,30 @@ class ArticleDialog extends React.Component {
               <CloseIcon />
             </IconButton>
             <Typography variant="h6" color="inherit" className={classes.flex}>
-              { edit ? 'Edit article' : 'New article' }
+              { articleId ? 'Edit article' : 'New article' }
             </Typography>
-            <IconButton color="inherit" aria-label="Save" onClick={this.saveData}>
+            <IconButton
+              disabled={!author || !title}
+              color="inherit"
+              aria-label="Save"
+              onClick={this.saveData}
+            >
               <SaveIcon />
             </IconButton>
           </Toolbar>
         </AppBar>
         <form className={classes.container} noValidate autoComplete="off">
+          <FormControlLabel
+            className={classes.field}
+            control={
+              <Checkbox
+                checked={published}
+                onChange={this.onFieldChange('published')}
+                value="published"
+              />
+            }
+            label="Published"
+          />
           <TextField
             id="title"
             label="Title"
@@ -110,6 +129,17 @@ class ArticleDialog extends React.Component {
             value={author}
             className={classes.field}
             onChange={this.onFieldChange('author')}
+            margin="normal"
+            variant="outlined"
+          />
+          <TextField
+            id="content"
+            label="Content"
+            value={content}
+            multiline
+            rows="4"
+            className={classes.field}
+            onChange={this.onFieldChange('content')}
             margin="normal"
             variant="outlined"
           />
@@ -145,21 +175,34 @@ class ArticleDialog extends React.Component {
           </FormControl>
         </form>
       </Dialog>
-    )
+    );
   }
 }
 
-const mapStateToProps = ({ ui }) => {
-  const { dialog: { articleId, edit, open } } = ui;
-  return { articleId, edit, open };
+ArticleDialog.propTypes = {
+  articleId: PropTypes.string,
+  classes: PropTypes.shape().isRequired,
+  closeDialog: PropTypes.func.isRequired,
+  open: PropTypes.bool,
+  values: PropTypes.shape(),
 };
 
-const mapDispatchToProps = dispatch => {
-  return {
-    closeDialog: success => dispatch(closeDialog(success)),
-  };
+ArticleDialog.defaultProps = {
+  open: true,
+  values: {},
 };
+
+const mapStateToProps = state => {
+  const { byId } = state.articles;
+  const { dialog: { articleId, open } } = state.ui;
+  const values = articleId ? byId[articleId] : emptyArticle;
+  return { articleId, open, values };
+};
+
+const mapDispatchToProps = dispatch => ({
+  closeDialog: () => dispatch(closeDialog()),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(
-  withStyles(articleDialogStyles)(ArticleDialog)
-)
+  withStyles(articleDialogStyles)(ArticleDialog),
+);

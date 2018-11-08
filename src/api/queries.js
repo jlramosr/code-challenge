@@ -1,7 +1,9 @@
 export const ARTICLES_QUERY = `{
   articles {
     author
-    excerpt
+    content
+    published
+    tags
     id
     title
   }

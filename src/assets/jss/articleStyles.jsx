@@ -6,4 +6,43 @@ export default theme => ({
       marginTop: 72,
     },
   },
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  subheader: {
+    alignItems: 'center',
+    display: 'flex',
+    borderBottom: `1px solid ${theme.palette.primary.main}`,
+    padding: '4px 16px',
+    [theme.breakpoints.up('sm')]: {
+      padding: '8px 24px',
+    },
+    overflow: 'hidden',
+  },
+  title: {
+    flexGrow: 1,
+    display: 'flex',
+    alignItems: 'center',
+  },
+  progress: {
+    marginLeft: 16,
+  },
+  main: {
+    display: 'flex',
+    padding: '12px 24px',
+  },
+  author: {
+    overflow: 'hidden',
+  },
+  tags: {
+    flex: 1,
+    textAlign: 'right',
+  },
+  chip: {
+    marginLeft: 8,
+  },
+  content: {
+    padding: '2px 16px',
+  },
 });

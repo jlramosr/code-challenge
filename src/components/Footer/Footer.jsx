@@ -19,11 +19,11 @@ const Footer = props => {
         &copy; {(new Date()).getFullYear()} Jose Ramos
       </Typography>
     </div>
-  )
-}
+  );
+};
 
 Footer.propTypes = {
-  classes: PropTypes.object.isRequired,
+  classes: PropTypes.shape().isRequired,
 };
 
 export default withStyles(FooterStyles)(Footer);

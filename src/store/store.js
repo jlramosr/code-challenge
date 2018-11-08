@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux';
 import thunk from 'redux-thunk';
-import articles from './articles';
+import articles from './reducers/articles';
 import ui from './reducers/ui';
 
 const composeEnhancers =

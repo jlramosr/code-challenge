@@ -1,11 +1,9 @@
 export default theme => ({
   container: {
-    padding: 8,
-    [theme.breakpoints.up('sm')]: {
-      padding: 16,
-    },
+    display: 'flex',
+    flexDirection: 'column',
   },
-  header: {
+  subheader: {
     alignItems: 'center',
     display: 'flex',
     borderBottom: `1px solid ${theme.palette.primary.main}`,
@@ -24,6 +22,7 @@ export default theme => ({
   },
   content: {
     padding: 24,
+    flex: 1,
   },
   link: {
     textDecoration: 'none',
@@ -40,6 +39,7 @@ export default theme => ({
     flexDirection: 'column',
     flex: 1,
     overflow: 'hidden',
+    paddingRight: 8,
   },
   itemExcerpt: {
     paddingTop: 12,

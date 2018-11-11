@@ -34,7 +34,7 @@ class Home extends React.Component {
 
   onClickDelete = async (event, articleId) => {
     event.preventDefault();
-    this.props.removeArticle(articleId);
+    await this.props.removeArticle(articleId);
   }
 
   render() {

@@ -1,4 +1,10 @@
-import { ARTICLES_QUERY } from '../../api/queries';
+import {
+  FETCH_ARTICLES_QUERY,
+  FETCH_ARTICLE_QUERY,
+  CREATE_ARTICLE_MUTATION,
+  UPDATE_ARTICLE_MUTATION,
+  DELETE_ARTICLE_MUTATION,
+} from '../../api/queries';
 import request from '../../api/request';
 
 export const FETCHING_ARTICLES = 'FETCHING_ARTICLES';
@@ -99,7 +105,7 @@ const removeArticleAction = articleId => ({
 const fetchArticles = () => async dispatch => {
   dispatch(fetchingArticlesAction());
   try {
-    const { data: { articles } } = await request(ARTICLES_QUERY);
+    const { data: { articles } } = await request(FETCH_ARTICLES_QUERY);
     dispatch(receiveArticlesAction(articles));
   } catch (error) {
     dispatch(errorFetchingArticlesAction(error));
@@ -109,42 +115,42 @@ const fetchArticles = () => async dispatch => {
 const fetchArticle = articleId => async dispatch => {
   dispatch(fetchingArticleAction());
   try {
-    const { data: { article } } = await request(ARTICLES_QUERY);
+    const { data: { article } } = await request(FETCH_ARTICLE_QUERY, { id: articleId });
     dispatch(receiveArticleAction(article));
   } catch (error) {
     dispatch(errorFetchingArticleAction(error));
   }
-}
+};
 
 const createArticle = values => async dispatch => {
-  dispatch(creatingArticleAction())
+  dispatch(creatingArticleAction());
   try {
-    const { data: { article } } = await request(ARTICLES_QUERY);
+    await request(CREATE_ARTICLE_MUTATION, values);
     dispatch(createArticleAction(values));
   } catch (error) {
     dispatch(errorCreatingArticleAction(error));
   }
-}
+};
 
 const updateArticle = (articleId, values) => async dispatch => {
   dispatch(updatingArticleAction());
   try {
-    const { data: { article } } = await request(ARTICLES_QUERY);
+    await request(UPDATE_ARTICLE_MUTATION, { id: articleId, ...values });
     dispatch(updateArticleAction(articleId, values));
   } catch (error) {
     dispatch(errorUpdatingArticleAction(articleId, error));
   }
-}
+};
 
 const removeArticle = articleId => async dispatch => {
   dispatch(removingArticleAction());
   try {
-    const { data: { article } } = await request(ARTICLES_QUERY);
+    await request(DELETE_ARTICLE_MUTATION, { id: articleId });
     dispatch(removeArticleAction(articleId));
   } catch (error) {
     dispatch(errorRemovingArticleAction(articleId, error));
   }
-}
+};
 
 export {
   fetchArticles,

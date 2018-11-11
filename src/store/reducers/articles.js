@@ -100,11 +100,11 @@ const flow = (state = initialFlowState, action) => {
 const byId = (state = initialByIdState, action) => {
   switch (action.type) {
     case RECEIVE_ARTICLES:
-      return Object.keys(action.articles).reduce((articles, articleId) => ({
+      return action.articles.reduce((articles, article) => ({
         ...articles,
-        [articleId]: {
-          ...action.articles[articleId],
-          id: articleId,
+        [article.id]: {
+          ...article,
+          id: article.id,
         },
       }), state);
     case RECEIVE_ARTICLE: {
@@ -145,14 +145,14 @@ const byId = (state = initialByIdState, action) => {
 const allIds = (state = initialAllIdsState, action) => {
   switch (action.type) {
     case RECEIVE_ARTICLES: {
-      return [...new Set([...state, ...Object.keys(action.articles)])];
+      return [...new Set([...state, ...action.articles.map(article => article.id)])];
     }
     case RECEIVE_ARTICLE:
-      return state;
+      return [...new Set([...state, ...action.articleId])];
     case CREATE_ARTICLE:
-      return state;
+      return [action.articleId, ...state];
     case REMOVE_ARTICLE:
-      return state;
+      return state.filter(id => action.articleId !== id);
     default:
       return state;
   }

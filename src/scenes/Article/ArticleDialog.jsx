@@ -19,6 +19,7 @@ import Select from '@material-ui/core/Select';
 import Chip from '@material-ui/core/Chip';
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Check';
+import { createArticle, updateArticle } from '../../store/actions/articles';
 import { closeDialog } from '../../store/actions/ui';
 import articleDialogStyles from '../../assets/jss/articleDialogStyles';
 
@@ -56,9 +57,13 @@ class ArticleDialog extends React.Component {
     });
   }
 
-  saveData = /*async*/ () => {
-    const { author, content, published, tags, title } = this.state;
-    const { edit, articleId } = this.props;
+  saveData = () => {
+    const { articleId } = this.props;
+    if (articleId) {
+      this.props.updateArticle(articleId, this.state);
+    } else {
+      this.props.createArticle(this.state);
+    }
   }
 
   finishDialog = () => {
@@ -183,7 +188,9 @@ ArticleDialog.propTypes = {
   articleId: PropTypes.string,
   classes: PropTypes.shape().isRequired,
   closeDialog: PropTypes.func.isRequired,
+  createArticle: PropTypes.func.isRequired,
   open: PropTypes.bool,
+  updateArticle: PropTypes.func.isRequired,
   values: PropTypes.shape(),
 };
 
@@ -201,6 +208,8 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = dispatch => ({
   closeDialog: () => dispatch(closeDialog()),
+  createArticle: data => dispatch(createArticle(data)),
+  updateArticle: (articleId, data) => dispatch(updateArticle(articleId, data)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(

@@ -54,13 +54,13 @@ const flow = (state = initialFlowState, action) => {
       return {
         ...state,
         fetchingOne: true,
-        errorFetchingItem: null,
+        errorFetchingOne: null,
       };
     case FETCHING_ARTICLE_ERROR:
       return {
         ...state,
         fetchingOne: false,
-        errorFetchingItem: action.error,
+        errorFetchingOne: action.error,
       };
     case RECEIVE_ARTICLE:
       return {
@@ -144,11 +144,11 @@ const byId = (state = initialByIdState, action) => {
 
 const allIds = (state = initialAllIdsState, action) => {
   switch (action.type) {
-    case RECEIVE_ARTICLES: {
+    case RECEIVE_ARTICLES:
       return [...new Set([...state, ...action.articles.map(article => article.id)])];
+    case RECEIVE_ARTICLE: {
+      return [...new Set([...state, action.articleId])];
     }
-    case RECEIVE_ARTICLE:
-      return [...new Set([...state, ...action.articleId])];
     case CREATE_ARTICLE:
       return [action.articleId, ...state];
     case REMOVE_ARTICLE:

@@ -41,6 +41,8 @@ export default theme => ({
   },
   chip: {
     marginLeft: 8,
+    marginTop: 2,
+    marginBottom: 2,
   },
   content: {
     padding: '2px 16px',

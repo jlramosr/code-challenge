@@ -116,7 +116,10 @@ const fetchArticle = articleId => async dispatch => {
   dispatch(fetchingArticleAction());
   try {
     const { data: { article } } = await request(FETCH_ARTICLE_QUERY, { id: articleId });
-    dispatch(receiveArticleAction(article));
+    if (!article) {
+      throw new Error('Not Found');
+    }
+    dispatch(receiveArticleAction(articleId, article));
   } catch (error) {
     dispatch(errorFetchingArticleAction(error));
   }
@@ -125,8 +128,8 @@ const fetchArticle = articleId => async dispatch => {
 const createArticle = values => async dispatch => {
   dispatch(creatingArticleAction());
   try {
-    await request(CREATE_ARTICLE_MUTATION, values);
-    dispatch(createArticleAction(values));
+    const { data } = await request(CREATE_ARTICLE_MUTATION, values);
+    dispatch(createArticleAction(data.createArticle.id, values));
   } catch (error) {
     dispatch(errorCreatingArticleAction(error));
   }

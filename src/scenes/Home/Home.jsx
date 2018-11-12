@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import classnames from 'classnames';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
@@ -11,6 +12,8 @@ import IconButton from '@material-ui/core/IconButton';
 import NewIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
+import Snackbar from '@material-ui/core/Snackbar';
 import Button from '../../components/Button/Button';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
@@ -19,8 +22,22 @@ import { openDialog } from '../../store/actions/ui';
 import HomeStyles from '../../assets/jss/homeStyles';
 
 class Home extends React.Component {
+  state = {
+    showError: false,
+  }
+
   componentDidMount() {
     this.props.fetchArticles();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.error && this.props.error !== prevProps.error) {
+      this.setState({ showError: true });
+    }
+  }
+
+  onCloseError = () => {
+    this.setState({ showError: false });
   }
 
   onClickNew = () => {
@@ -38,7 +55,7 @@ class Home extends React.Component {
   }
 
   render() {
-    const { articles, classes, loading } = this.props;
+    const { articles, classes, error, loading } = this.props;
 
     return (
       <React.Fragment>
@@ -49,14 +66,16 @@ class Home extends React.Component {
               <Typography variant="h4">Articles</Typography>
               {loading && <CircularProgress className={classes.progress} />}
             </div>
-            <Button
-              size="small"
-              title="New"
-              variant="outlined"
-              responsive
-              onClick={() => this.onClickNew()}
-              icon={NewIcon}
-            />
+            {(!loading && !error) &&
+              <Button
+                size="small"
+                title="New"
+                variant="outlined"
+                responsive
+                onClick={() => this.onClickNew()}
+                icon={NewIcon}
+              />
+            }
           </div>
           <div className={classes.content}>
             {!articles.length && !loading &&
@@ -66,7 +85,12 @@ class Home extends React.Component {
               {articles.map(article => (
                 <Grid key={article.id} item xs={12} md={6} xl={4}>
                   <Link className={classes.link} to={`/${article.id}`}>
-                    <Paper className={classes.paper}>
+                    <Paper
+                      className={classnames(
+                        classes.paper,
+                        !article.published && classes.unpublished,
+                      )}
+                    >
                       <div className={classes.itemInfo}>
                         <Typography variant="h5">{article.title}</Typography>
                         <div className={classes.itemExcerpt}>
@@ -95,8 +119,28 @@ class Home extends React.Component {
               ))}
             </Grid>
           </div>
+          <Footer />
         </div>
-        <Footer />
+        <Snackbar
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'left',
+          }}
+          open={this.state.showError}
+          autoHideDuration={6000}
+          onClose={this.onCloseError}
+          message={<span id="message-id">Error fetching articles</span>}
+          action={[
+            <IconButton
+              key="close"
+              aria-label="Close"
+              color="inherit"
+              onClick={this.onCloseError}
+            >
+              <CloseIcon />
+            </IconButton>,
+          ]}
+        />
       </React.Fragment>
     );
   }
@@ -105,6 +149,7 @@ class Home extends React.Component {
 Home.propTypes = {
   articles: PropTypes.arrayOf(PropTypes.shape),
   classes: PropTypes.shape().isRequired,
+  error: PropTypes.shape(),
   fetchArticles: PropTypes.func.isRequired,
   loading: PropTypes.bool,
   openDialog: PropTypes.func.isRequired,
@@ -113,13 +158,15 @@ Home.propTypes = {
 
 Home.defaultProps = {
   articles: [],
+  error: null,
   loading: true,
 };
 
 const mapStateToProps = state => {
-  const { allIds, byId, flow: { fetchingAll } } = state.articles;
+  const { allIds, byId, flow: { errorFetchingAll, fetchingAll } } = state.articles;
   return {
     articles: allIds.map(id => byId[id]),
+    error: errorFetchingAll,
     loading: fetchingAll,
   };
 };

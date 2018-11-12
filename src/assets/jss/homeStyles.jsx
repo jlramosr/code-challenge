@@ -2,14 +2,18 @@ export default theme => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
+    minHeight: 'calc(100vh - 64px)',
+    [theme.breakpoints.up('sm')]: {
+      minHeight: 'calc(100vh - 72px)',
+    },
   },
   subheader: {
     alignItems: 'center',
     display: 'flex',
     borderBottom: `1px solid ${theme.palette.primary.main}`,
-    padding: '4px 16px',
+    padding: '16px 16px 4px',
     [theme.breakpoints.up('sm')]: {
-      padding: '8px 24px',
+      padding: '16px 24px 8px',
     },
   },
   title: {
@@ -32,6 +36,13 @@ export default theme => ({
     padding: 16,
     '&:hover': {
       background: '#E8EAF6',
+    },
+  },
+  unpublished: {
+    opacity: 0.6,
+    background: '#ffdddd',
+    '&:hover': {
+      background: '#ffcccc',
     },
   },
   itemInfo: {

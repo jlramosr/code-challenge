@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Dialog from '@material-ui/core/Dialog';
@@ -11,11 +12,6 @@ import Slide from '@material-ui/core/Slide';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import TextField from '@material-ui/core/TextField';
-import Input from '@material-ui/core/Input';
-import InputLabel from '@material-ui/core/InputLabel';
-import MenuItem from '@material-ui/core/MenuItem';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 import Chip from '@material-ui/core/Chip';
 import CloseIcon from '@material-ui/icons/Close';
 import SaveIcon from '@material-ui/icons/Check';
@@ -26,6 +22,7 @@ import articleDialogStyles from '../../assets/jss/articleDialogStyles';
 const emptyArticle = {
   author: '',
   content: '',
+  newTag: '',
   published: false,
   tags: [],
   title: '',
@@ -45,25 +42,34 @@ class ArticleDialog extends React.Component {
     }
   }
 
+  onAddTag = () => {
+    this.setState(previousState => ({
+      newTag: '',
+      tags: [...previousState.tags, previousState.newTag],
+    }));
+  }
+
   onRemoveTag = tagRemoved => {
-    this.setState(previousState => ({ 
+    this.setState(previousState => ({
       tags: previousState.tags.filter(tag => tag !== tagRemoved),
     }));
   }
 
   onFieldChange = fieldName => event => {
     this.setState({
-      [fieldName]: event.target.value,
+      [fieldName]: event.target[fieldName === 'published' ? 'checked' : 'value'],
     });
   }
 
   saveData = () => {
     const { articleId } = this.props;
+    const { newTag, ...data } = this.state;
     if (articleId) {
-      this.props.updateArticle(articleId, this.state);
+      this.props.updateArticle(articleId, data);
     } else {
-      this.props.createArticle(this.state);
+      this.props.createArticle(data);
     }
+    this.finishDialog();
   }
 
   finishDialog = () => {
@@ -80,8 +86,8 @@ class ArticleDialog extends React.Component {
   };
 
   render() {
-    const { author, content, published, tags, title } = this.state;
-    const { articleId, classes, open } = this.props;
+    const { author, content, newTag, published, tags, title } = this.state;
+    const { articleId, classes, loading, open } = this.props;
     return (
       <Dialog
         fullScreen
@@ -97,6 +103,7 @@ class ArticleDialog extends React.Component {
             <Typography variant="h6" color="inherit" className={classes.flex}>
               { articleId ? 'Edit article' : 'New article' }
             </Typography>
+            {loading && <CircularProgress />}
             <IconButton
               disabled={!author || !title}
               color="inherit"
@@ -148,36 +155,40 @@ class ArticleDialog extends React.Component {
             margin="normal"
             variant="outlined"
           />
-          <FormControl className={classes.field}>
-            <InputLabel htmlFor="tags">Tags</InputLabel>
-            <Select
-              multiple
-              value={tags}
-              onChange={this.onFieldChange('tags')}
-              input={<Input id="tags" />}
-              /*renderValue={selected => {
-                const tagsSelected = selected.map(tags => tags.find(tag2 => tag2 === selected))
-                return (
-                  <div className={classes.chips}>
-                    {tagsSelected.map(tag => (
-                      <Chip
-                        onDelete={() => this.onRemoveTag(tag)}
-                        key={tag}
-                        label={tag}
-                        className={classes.chip}
-                      />
-                    ))}
-                  </div>
-                )
-              }}*/
-            >
+          <div className={classes.tags}>
+            <div className={classes.tagsTitle}>
+              <Typography variant="h6">Tags</Typography>
+            </div>
+            <div className={classes.tagsChips}>
               {tags.map(tag => (
-                <MenuItem key={tag} value={tag}>
-                  {tag}
-                </MenuItem>
+                <Chip
+                  onDelete={() => this.onRemoveTag(tag)}
+                  key={tag}
+                  label={tag}
+                  className={classes.chip}
+                />
               ))}
-            </Select>
-          </FormControl>
+            </div>
+            <div className={classes.tagsNew}>
+              <TextField
+                id="newTag"
+                label="New Tag"
+                value={newTag}
+                onChange={this.onFieldChange('newTag')}
+                className={classes.field}
+                margin="normal"
+                variant="outlined"
+              />
+              <IconButton
+                disabled={!newTag}
+                color="inherit"
+                aria-label="Add Tag"
+                onClick={() => this.onAddTag()}
+              >
+                <SaveIcon />
+              </IconButton>
+            </div>
+          </div>
         </form>
       </Dialog>
     );
@@ -189,21 +200,24 @@ ArticleDialog.propTypes = {
   classes: PropTypes.shape().isRequired,
   closeDialog: PropTypes.func.isRequired,
   createArticle: PropTypes.func.isRequired,
+  loading: PropTypes.bool,
   open: PropTypes.bool,
   updateArticle: PropTypes.func.isRequired,
   values: PropTypes.shape(),
 };
 
 ArticleDialog.defaultProps = {
+  loading: false,
   open: true,
   values: {},
 };
 
 const mapStateToProps = state => {
-  const { byId } = state.articles;
+  const { byId, flow } = state.articles;
   const { dialog: { articleId, open } } = state.ui;
   const values = articleId ? byId[articleId] : emptyArticle;
-  return { articleId, open, values };
+  const loading = flow.changingOne;
+  return { articleId, loading, open, values };
 };
 
 const mapDispatchToProps = dispatch => ({
